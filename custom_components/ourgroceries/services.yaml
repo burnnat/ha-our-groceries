@@ -27,3 +27,6 @@ copy_to_list:
     from_list_id:
       description: Name or ID of the list to copy from.
       example: 'Source Shopping List'
+    unique_only:
+      description: When enabled, will not copy items already present on the destination list.
+      example: true

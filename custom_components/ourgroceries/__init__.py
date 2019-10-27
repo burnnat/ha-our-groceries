@@ -49,9 +49,8 @@ SERVICE_TO_METHOD = {
         'method': 'async_copy_to_list',
         'schema': vol.Schema({
             vol.Required(ATTR_LIST_ID): cv.string,
-            vol.Required('from_list_id'): cv.string
-        })
-    }
+            vol.Required('from_list_id'): cv.string,
+            'unique_only': cv.boolean})}
 }
 
 async def async_setup(hass, config):
@@ -250,15 +249,21 @@ class OurGroceriesServices:
         
         return True
 
-    async def async_copy_to_list(self, list_id, from_list_id):
+    async def async_copy_to_list(self, list_id, from_list_id, unique_only=False):
         """Copies items from one list to another."""
         _LOGGER.debug('copying to list')
 
         internal_src, internal_dest = await self._lookup_lists([from_list_id, list_id])
 
         response = await self._og.get_list_items(internal_src)
+        items_to_copy = [item['value'] for item in response['list']['items']]
 
-        for item in response['list']['items']:
-            await self._og.add_item_to_list(internal_dest, item['value'])
+        if unique_only:
+            response = await self._og.get_list_items(internal_dest)
+            items_in_dest = [item['value'] for item in response['list']['items']]
+            items_to_copy = [x for x in items_to_copy if x not in items_in_dest]
+
+        for item in items_to_copy:
+            await self._og.add_item_to_list(internal_dest, item)
 
         return True

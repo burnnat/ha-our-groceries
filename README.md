@@ -78,6 +78,7 @@ Copies all items from one list to another.
 | ---- | ---- | ------- | -----------
 | list_id | string | **Required** | name or ID of the destination OurGroceries list
 | from_list_id | string | **Required** | name or ID of the source OurGroceries list
+| unique_only | boolean | Optional | `false` When true, only copies items that are not already on the destination list
 
 ```yaml
 service: ourgroceries.remove_from_list
