@@ -226,6 +226,10 @@ class OurGroceriesServices:
         response = await self._og.get_list_items(list_id)
         return self._lookup_data(response['list']['items'], 'value', items)
 
+    async def _get_active_items(self, list_id):
+        response = await self._og.get_list_items(list_id)
+        return [item['value'] for item in response['list']['items'] if 'crossedOff' not in item or not item['crossedOff']]
+
     async def async_add_to_list(self, list_id, items):
         """Add items to the given list."""
         _LOGGER.debug('adding to list')
@@ -255,12 +259,10 @@ class OurGroceriesServices:
 
         internal_src, internal_dest = await self._lookup_lists([from_list_id, list_id])
 
-        response = await self._og.get_list_items(internal_src)
-        items_to_copy = [item['value'] for item in response['list']['items']]
+        items_to_copy = await self._get_active_items(internal_src)
 
         if unique_only:
-            response = await self._og.get_list_items(internal_dest)
-            items_in_dest = [item['value'] for item in response['list']['items']]
+            items_in_dest = await self._get_active_items(internal_dest)
             items_to_copy = [x for x in items_to_copy if x not in items_in_dest]
 
         for item in items_to_copy:
